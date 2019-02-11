@@ -34,9 +34,10 @@ class Board extends React.Component {
   }
 
   calculateRestMoves = () => {
+    console.log("run calculate rest moves")
     const board = this.state.squares
     let analysis = []
-    this.winningLines.forEach(line => {
+    this.winningLines.forEach((line, index) => {
       let analysisLine = [0, 0, 0]
       for (var i = 0; i < line.length; i++) {
         if (board[line[i]] === "X") {
@@ -45,11 +46,30 @@ class Board extends React.Component {
         if (board[line[i]] === "O") {
           analysisLine[1]++
         }
-        analysis.push(analysisLine)
+        // if (board[line[i]] === null) {
+        //   analysisLine[2]++
+        // }
+        analysisLine[2] = index
       }
-
-      console.log(analysis)
+      analysis.push(analysisLine)
     })
+    console.log(analysis)
+
+    let possibleLooseNextMove = analysis.filter(elem => {
+      return elem[0] > 1
+    })
+    // console.log(possibleLooseNextMove);
+    if (possibleLooseNextMove.length > 0) {
+      console.log(this.winningLines[possibleLooseNextMove[0][2]])
+      this.winningLines[possibleLooseNextMove[0][2]].forEach(elem => {
+        if (board[elem] === null) {
+          console.log(elem)
+          return this.setValue(elem, "O")
+        }
+      })
+    } else {
+      // TODO: calculate attack move
+    }
   }
 
   changeTurns = () => {

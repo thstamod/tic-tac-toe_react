@@ -8,17 +8,10 @@ class Square extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log(state.value)
-    //console.log(state)
-    console.log(props.value)
     if (props.value === "O") {
       return { value: props.value }
     }
     return null
-  }
-
-  set(value) {
-    this.setState({ value })
   }
 
   render() {
