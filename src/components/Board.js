@@ -46,29 +46,68 @@ class Board extends React.Component {
         if (board[line[i]] === "O") {
           analysisLine[1]++
         }
-        // if (board[line[i]] === null) {
-        //   analysisLine[2]++
-        // }
         analysisLine[2] = index
       }
       analysis.push(analysisLine)
     })
     console.log(analysis)
 
-    let possibleLooseNextMove = analysis.filter(elem => {
+    let possibleLoseNextMove = analysis.filter(elem => {
       return elem[0] > 1
     })
-    // console.log(possibleLooseNextMove);
-    if (possibleLooseNextMove.length > 0) {
-      console.log(this.winningLines[possibleLooseNextMove[0][2]])
-      this.winningLines[possibleLooseNextMove[0][2]].forEach(elem => {
+    let possibleNextMoveO = analysis.filter(elem => {
+      return elem[1] > 1
+    })
+    console.log(possibleLoseNextMove)
+    if (possibleLoseNextMove.length > 0) {
+      for (var i = 0; i < possibleLoseNextMove.length; i++) {
+        this.winningLines[possibleLoseNextMove[i][2]].forEach(elem => {
+          if (board[elem] === null) {
+            return this.setValue(elem, "O")
+          }
+        })
+      }
+      return
+    }
+    //Not working yet
+    if (possibleNextMoveO.length > 0) {
+      this.winningLines[possibleNextMoveO[0][2]].forEach(elem => {
         if (board[elem] === null) {
-          console.log(elem)
           return this.setValue(elem, "O")
         }
       })
-    } else {
-      // TODO: calculate attack move
+      return
+    }
+    if (possibleLoseNextMove.length === 0 && possibleNextMoveO.length === 0) {
+      console.log("winning lines: ", this.winningLines)
+      console.log("analysis: ", analysis)
+      console.log("state: ", this.state.squares)
+
+      let possibleMoves = []
+      //  analysis.forEach(elem => {
+      //   if(elem[1] > 0) {
+      //     if(elem[0]> 0) {
+      //       possibleMoves.push([1,'H',elem[2]])
+      //     }else {
+      //       possibleMoves.push([1,'L',elem[2]])
+      //     }
+      //   }
+      // })
+      let Opos = []
+      board.forEach((elem, index) => {
+        if (elem === "O") {
+          Opos.push(index)
+        }
+      })
+      Opos.forEach(elem => {
+        this.winningLines.forEach((elem, index) => {
+          elem.forEach((inner_elem, index) => {
+            console.log(inner_elem)
+          })
+        })
+      })
+
+      console.log(possibleMoves)
     }
   }
 
@@ -85,12 +124,13 @@ class Board extends React.Component {
   }
 
   setFirstMove = symbol => {
+    //for debug perposes
+    // this.setValue(3, symbol)
     this.firstMoveDone = true
-    const board = this.state.squares
-    const possibleFirstMoves = [0, 2, 4, 6, 8]
-    const rand = Math.floor(Math.random() * possibleFirstMoves.length)
-    if (board[possibleFirstMoves[rand]] === null) {
-      this.setValue(possibleFirstMoves[rand], symbol)
+    if (this.state.squares[4] === null) {
+      this.setValue(4, symbol)
+    } else {
+      this.setValue(6, symbol)
     }
   }
 
@@ -114,7 +154,6 @@ class Board extends React.Component {
     )
   }
   render() {
-    //console.log(this.state.squares);
     return (
       <div>
         <div className="board-row">
