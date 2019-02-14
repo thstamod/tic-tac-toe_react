@@ -4,7 +4,7 @@ import Square from "./Square"
 class Board extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { squares: Array(9).fill(null), turn: "Human" }
+    this.state = { squares: Array(9).fill(null), turn: "Human", status: 'in progress' }
     this.firstMoveDone = false
     this.winningLines = [
       [0, 1, 2],
@@ -36,6 +36,7 @@ class Board extends React.Component {
     flag = !flag
   }
   calculateRestMoves = () => {
+    let moveCompleted = false;
     console.log("run calculate rest moves")
     const board = this.state.squares
     let analysis = []
@@ -55,58 +56,81 @@ class Board extends React.Component {
     //console.log(analysis)
 
     let possibleLoseNextMove = analysis.filter(elem => {
-      return elem[0] > 1
+      return elem[0] > 1 && elem[1] > 0
     })
     let possibleNextMoveO = analysis.filter(elem => {
-      return elem[1] > 1
+      return elem[1] > 1 && elem[0] > 0
     })
 
-    console.log(possibleNextMoveO)
-    if (possibleNextMoveO.length > 0) {
+
+    if (possibleNextMoveO.length > 0 && !moveCompleted) {
       for (let i = 0; i < possibleNextMoveO.length; i++) {
         this.winningLines[possibleNextMoveO[i][2]].forEach(elem => {
           if (board[elem] === null) {
+            this.changeFlag(moveCompleted);
             return this.setValue(elem, "O")
-          } else {
-            possibleNextMoveO.slice(i, 1)
-          }
+          }  
         })
       }
     }
 
-    if (possibleLoseNextMove.length > 0) {
+    if (possibleLoseNextMove.length > 0 && !moveCompleted) {
       var stateUpdated = false
       for (let i = 0; i < possibleLoseNextMove.length; i++) {
         this.winningLines[possibleLoseNextMove[i][2]].forEach(elem => {
           if (board[elem] === null) {
             this.changeFlag(stateUpdated)
+            this.changeFlag(moveCompleted);
             return this.setValue(elem, "O")
-          }
+          } 
         })
       }
     }
 
-    if (possibleLoseNextMove.length === 0 && possibleNextMoveO.length === 0) {
+    if (possibleLoseNextMove.length === 0 && possibleNextMoveO.length === 0 && !moveCompleted) {
+    
+      console.log('----------------------')
       console.log("winning lines: ", this.winningLines)
       console.log("analysis: ", analysis)
       console.log("state: ", this.state.squares)
-
+      console.log('----------------------')
       let possibleMoves = []
-      let Opos = []
-      board.forEach((elem, index) => {
-        if (elem === "O") {
-          Opos.push(index)
-        }
-      })
-      Opos.forEach(elem => {
-        this.winningLines.forEach((elem, index) => {
-          elem.forEach((inner_elem, index) => {
-            console.log(inner_elem)
-          })
-        })
-      })
+      // let Opos = []
+      // board.forEach((elem, index) => {
+      //   if (elem === "O") {
+      //     Opos.push(index)
+      //   }
+      // })
+      let tempLines = [];
+      // Opos.forEach(OposElem => {
+      //   this.winningLines.forEach((winningElem, index) => {
+      //     winningElem.forEach((innerElem, index) => {
+      //     if(OposElem === innerElem) {
+      //       tempLines.push(index)
+      //     }
+      //     })
+      //   })
+      // })
+      // tempLines.forEach((elem,index) => {
+      //     this.winningLines[elem]
+      // })
 
-      console.log(possibleMoves)
+analysis.forEach((_elem) => {
+  if(_elem[1] === 1 && _elem[0] === 0) {
+tempLines.push(_elem)
+  }
+})
+tempLines.forEach((elem,index) => {
+  this.winningLines[elem].forEach(elem => {
+    if (board[elem] === null) {
+      this.changeFlag(moveCompleted);
+      return this.setValue(elem, "O")
+    }
+  })
+})
+console.log(tempLines)
+
+     // console.log(possibleMoves)
     }
   }
 
@@ -122,20 +146,35 @@ class Board extends React.Component {
         this.computerTurn("O")
       }
     } else {
-      console.log("game ends")
+      this.setState({status: 'game end'})
     }
   }
 
   setFirstMove = symbol => {
     //for debug perposes
     // this.setValue(3, symbol)
+
+
+    const board = this.state.squares
+    const possibleFirstMoves = [0, 2, 6, 8]
     this.firstMoveDone = true
     if (this.state.squares[4] === null) {
       this.setValue(4, symbol)
     } else {
-      this.setValue(6, symbol)
+     let played = false;
+     while(played === false) {
+      let random = this.getRandom(possibleFirstMoves.length)
+       if (board[random] === null) {
+          this.setValue(possibleFirstMoves[random], symbol)
+         played = true;
+    }
+     }
     }
   }
+
+getRandom = (number) => {
+ return Math.floor(Math.random() * number)
+}
 
   calculateWinner = squares => {
     for (let i = 0; i < this.winningLines.length; i++) {
@@ -174,6 +213,7 @@ class Board extends React.Component {
           {this.renderSquare(7)}
           {this.renderSquare(8)}
         </div>
+        <div>{this.state.status}</div>
       </div>
     )
   }
