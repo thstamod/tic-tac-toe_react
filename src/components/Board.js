@@ -6,6 +6,7 @@ class Board extends React.Component {
     super(props)
     this.state = { squares: Array(9).fill(null), turn: "Human", status: 'in progress' }
     this.firstMoveDone = false
+    this.moveCompleted = false;
     this.winningLines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -22,6 +23,7 @@ class Board extends React.Component {
     console.log(position, value)
     let squares = this.state.squares
     squares[position] = value
+    this.moveCompleted = true
     this.setState({ squares, turn: this.changeTurns() }, this.turn)
   }
 
@@ -36,7 +38,7 @@ class Board extends React.Component {
     flag = !flag
   }
   calculateRestMoves = () => {
-    let moveCompleted = false;
+    this.moveCompleted = false;
     console.log("run calculate rest moves")
     const board = this.state.squares
     let analysis = []
@@ -56,81 +58,76 @@ class Board extends React.Component {
     //console.log(analysis)
 
     let possibleLoseNextMove = analysis.filter(elem => {
-      return elem[0] > 1 && elem[1] > 0
+      return elem[0] > 1 && elem[1] === 0
     })
     let possibleNextMoveO = analysis.filter(elem => {
-      return elem[1] > 1 && elem[0] > 0
+      return elem[1] > 1 && elem[0] === 0
     })
 
 
-    if (possibleNextMoveO.length > 0 && !moveCompleted) {
+    if (possibleNextMoveO.length > 0 && !this.moveCompleted) {
       for (let i = 0; i < possibleNextMoveO.length; i++) {
         this.winningLines[possibleNextMoveO[i][2]].forEach(elem => {
           if (board[elem] === null) {
-            this.changeFlag(moveCompleted);
+            this.moveCompleted = true;
+           // this.changeFlag(moveCompleted);
             return this.setValue(elem, "O")
           }  
         })
       }
     }
 
-    if (possibleLoseNextMove.length > 0 && !moveCompleted) {
-      var stateUpdated = false
+    if (possibleLoseNextMove.length > 0 && !this.moveCompleted) {
+     // var stateUpdated = false
       for (let i = 0; i < possibleLoseNextMove.length; i++) {
         this.winningLines[possibleLoseNextMove[i][2]].forEach(elem => {
           if (board[elem] === null) {
-            this.changeFlag(stateUpdated)
-            this.changeFlag(moveCompleted);
+           // this.changeFlag(stateUpdated)
+           // moveCompleted =  this.changeFlag(moveCompleted);
+           this.moveCompleted = true;
             return this.setValue(elem, "O")
           } 
         })
       }
     }
 
-    if (possibleLoseNextMove.length === 0 && possibleNextMoveO.length === 0 && !moveCompleted) {
-    
+    if (possibleLoseNextMove.length === 0 && possibleNextMoveO.length === 0 && !this.moveCompleted) {
       console.log('----------------------')
       console.log("winning lines: ", this.winningLines)
       console.log("analysis: ", analysis)
       console.log("state: ", this.state.squares)
       console.log('----------------------')
-      let possibleMoves = []
-      // let Opos = []
-      // board.forEach((elem, index) => {
-      //   if (elem === "O") {
-      //     Opos.push(index)
-      //   }
-      // })
       let tempLines = [];
-      // Opos.forEach(OposElem => {
-      //   this.winningLines.forEach((winningElem, index) => {
-      //     winningElem.forEach((innerElem, index) => {
-      //     if(OposElem === innerElem) {
-      //       tempLines.push(index)
-      //     }
-      //     })
-      //   })
-      // })
-      // tempLines.forEach((elem,index) => {
-      //     this.winningLines[elem]
-      // })
+      let possibleMoves = []
 
 analysis.forEach((_elem) => {
   if(_elem[1] === 1 && _elem[0] === 0) {
 tempLines.push(_elem)
   }
 })
+console.log(tempLines)
 tempLines.forEach((elem,index) => {
-  this.winningLines[elem].forEach(elem => {
-    if (board[elem] === null) {
-      this.changeFlag(moveCompleted);
-      return this.setValue(elem, "O")
+  this.winningLines[elem[2]].forEach(_elem => {
+    if (board[_elem] === null) {
+      this.moveCompleted = true;
+     possibleMoves.push(_elem)
     }
   })
 })
-console.log(tempLines)
+if(possibleMoves.length >0) {
+  this.setValue(possibleMoves[0], "O")
+}else {
+  let available = [];
+  board.forEach((elem,index) => {
+    if(elem === null) {
+      available.push(index)
+    }
+  })
+  if(available.length > 0) {
+    this.setValue(this.getRandom(available.length) , "O")
+  }
+}
 
-     // console.log(possibleMoves)
     }
   }
 
