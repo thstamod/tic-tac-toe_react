@@ -4,9 +4,14 @@ import Square from "./Square"
 class Board extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { squares: Array(9).fill(null), turn: "Human", status: 'in progress' }
+    this.state = {
+      squares: Array(9).fill(null),
+      turn: "Human",
+      status: "in progress",
+      gameIsFinished: false
+    }
     this.firstMoveDone = false
-    this.moveCompleted = false;
+    this.moveCompleted = false
     this.winningLines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -20,11 +25,13 @@ class Board extends React.Component {
   }
 
   setValue = (position, value) => {
-    console.log(position, value)
-    let squares = this.state.squares
-    squares[position] = value
-    this.moveCompleted = true
-    this.setState({ squares, turn: this.changeTurns() }, this.turn)
+    if (!this.state.gameIsFinished) {
+      console.log(position, value)
+      let squares = this.state.squares
+      squares[position] = value
+      this.moveCompleted = true
+      this.setState({ squares, turn: this.changeTurns() }, this.turn)
+    }
   }
 
   computerTurn = symbol => {
@@ -38,7 +45,7 @@ class Board extends React.Component {
     flag = !flag
   }
   calculateRestMoves = () => {
-    this.moveCompleted = false;
+    this.moveCompleted = false
     console.log("run calculate rest moves")
     const board = this.state.squares
     let analysis = []
@@ -64,70 +71,72 @@ class Board extends React.Component {
       return elem[1] > 1 && elem[0] === 0
     })
 
-
     if (possibleNextMoveO.length > 0 && !this.moveCompleted) {
       for (let i = 0; i < possibleNextMoveO.length; i++) {
         this.winningLines[possibleNextMoveO[i][2]].forEach(elem => {
           if (board[elem] === null) {
-            this.moveCompleted = true;
-           // this.changeFlag(moveCompleted);
+            this.moveCompleted = true
+            // this.changeFlag(moveCompleted);
             return this.setValue(elem, "O")
-          }  
+          }
         })
       }
     }
 
     if (possibleLoseNextMove.length > 0 && !this.moveCompleted) {
-     // var stateUpdated = false
+      // var stateUpdated = false
       for (let i = 0; i < possibleLoseNextMove.length; i++) {
         this.winningLines[possibleLoseNextMove[i][2]].forEach(elem => {
           if (board[elem] === null) {
-           // this.changeFlag(stateUpdated)
-           // moveCompleted =  this.changeFlag(moveCompleted);
-           this.moveCompleted = true;
+            // this.changeFlag(stateUpdated)
+            // moveCompleted =  this.changeFlag(moveCompleted);
+            this.moveCompleted = true
             return this.setValue(elem, "O")
-          } 
+          }
         })
       }
     }
 
-    if (possibleLoseNextMove.length === 0 && possibleNextMoveO.length === 0 && !this.moveCompleted) {
-      console.log('----------------------')
+    if (
+      possibleLoseNextMove.length === 0 &&
+      possibleNextMoveO.length === 0 &&
+      !this.moveCompleted
+    ) {
+      console.log("----------------------")
       console.log("winning lines: ", this.winningLines)
       console.log("analysis: ", analysis)
       console.log("state: ", this.state.squares)
-      console.log('----------------------')
-      let tempLines = [];
+      console.log("----------------------")
+      let tempLines = []
       let possibleMoves = []
 
-analysis.forEach((_elem) => {
-  if(_elem[1] === 1 && _elem[0] === 0) {
-tempLines.push(_elem)
-  }
-})
-console.log(tempLines)
-tempLines.forEach((elem,index) => {
-  this.winningLines[elem[2]].forEach(_elem => {
-    if (board[_elem] === null) {
-      this.moveCompleted = true;
-     possibleMoves.push(_elem)
-    }
-  })
-})
-if(possibleMoves.length >0) {
-  this.setValue(possibleMoves[0], "O")
-}else {
-  let available = [];
-  board.forEach((elem,index) => {
-    if(elem === null) {
-      available.push(index)
-    }
-  })
-  if(available.length > 0) {
-    this.setValue(this.getRandom(available.length) , "O")
-  }
-}
-
+      analysis.forEach(_elem => {
+        if (_elem[1] === 1 && _elem[0] === 0) {
+          tempLines.push(_elem)
+        }
+      })
+      console.log(tempLines)
+      tempLines.forEach((elem, index) => {
+        this.winningLines[elem[2]].forEach(_elem => {
+          if (board[_elem] === null) {
+            this.moveCompleted = true
+            possibleMoves.push(_elem)
+          }
+        })
+      })
+      if (possibleMoves.length > 0) {
+        this.setValue(possibleMoves[0], "O")
+      } else {
+        let available = []
+        board.forEach((elem, index) => {
+          if (elem === null) {
+            available.push(index)
+          }
+        })
+        if (available.length > 0) {
+          this.setValue(this.getRandom(available.length), "O")
+        }
+      }
     }
   }
 
@@ -143,35 +152,31 @@ if(possibleMoves.length >0) {
         this.computerTurn("O")
       }
     } else {
-      this.setState({status: 'game end'})
+      this.setState({ status: "game end", gameIsFinished: true })
     }
   }
 
   setFirstMove = symbol => {
-    //for debug perposes
-    // this.setValue(3, symbol)
-
-
     const board = this.state.squares
     const possibleFirstMoves = [0, 2, 6, 8]
     this.firstMoveDone = true
     if (this.state.squares[4] === null) {
       this.setValue(4, symbol)
     } else {
-     let played = false;
-     while(played === false) {
-      let random = this.getRandom(possibleFirstMoves.length)
-       if (board[random] === null) {
+      let played = false
+      while (played === false) {
+        let random = this.getRandom(possibleFirstMoves.length)
+        if (board[random] === null) {
           this.setValue(possibleFirstMoves[random], symbol)
-         played = true;
-    }
-     }
+          played = true
+        }
+      }
     }
   }
 
-getRandom = (number) => {
- return Math.floor(Math.random() * number)
-}
+  getRandom = number => {
+    return Math.floor(Math.random() * number)
+  }
 
   calculateWinner = squares => {
     for (let i = 0; i < this.winningLines.length; i++) {
